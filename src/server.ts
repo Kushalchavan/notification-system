@@ -2,19 +2,31 @@ import express from "express";
 import logger from "./config/logger.config";
 import { serverConfig } from "./config/index";
 import { appErrorHandler } from "./middlewares/error.middleware";
+import { connectDB } from "./config/db.init";
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Welcome to the notifications system!");
-});
+const startServer = async () => {
+  try {
+    await connectDB();
 
-// error handlers
-app.use(appErrorHandler);
+    app.get("/", (req, res) => {
+      res.send("Welcome to the notifications system!");
+    });
 
-app.listen(serverConfig.PORT, () => {
-  logger.info(`Server is running on http://localhost:${serverConfig.PORT}`);
-  logger.info(`Press Ctrl+C to stop the server.`);
-});
+    // error handling middleware should be registered after all routes
+    app.use(appErrorHandler);
+
+    app.listen(serverConfig.PORT, () => {
+      logger.info(`Server is running on http://localhost:${serverConfig.PORT}`);
+      logger.info("Press CTRL+C to stop the server");
+    });
+  } catch (error) {
+    logger.error("Failed to start server", error);
+    process.exit(1);
+  }
+};
+
+startServer();
