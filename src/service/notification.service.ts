@@ -22,6 +22,7 @@ export const createNotificationService = async (
     max_retries: 3,
     idempotency_key: data.idempotency_key ?? null,
     error_message: null,
+    email: data.email ?? null,
   };
 
   //  Try insert (race-safe)

@@ -8,6 +8,7 @@ export interface Notification {
   status: NotificationStatus;
   retry_count: number;
   max_retries: number;
+  email: string | null;
   idempotency_key: string | null;
   error_message?: string | null;
   created_at: Date;
@@ -23,4 +24,5 @@ export interface CreateNotificationDBInput {
   max_retries: number;
   idempotency_key: string | null;
   error_message: string | null;
+  email: string | null;
 }

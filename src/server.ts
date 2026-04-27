@@ -1,7 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import logger from "./config/logger.config";
-import { serverConfig } from "./config/index";
+import { serverConfig } from "./config/env.config";
 import {
   appErrorHandler,
   genericErrorHandler,

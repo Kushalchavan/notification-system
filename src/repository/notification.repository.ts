@@ -9,8 +9,8 @@ export const createNotification = async (
   data: CreateNotificationDBInput,
 ): Promise<Notification | null> => {
   const query = `
-  INSERT INTO notifications (user_id, type, message, status, retry_count, max_retries, idempotency_key, error_message)
-  VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+  INSERT INTO notifications (user_id, type, message, status, retry_count, max_retries,email, idempotency_key, error_message)
+  VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
   ON CONFLICT (idempotency_key) DO NOTHING
   RETURNING *;
 `;
@@ -22,6 +22,7 @@ export const createNotification = async (
     data.status,
     data.retry_count,
     data.max_retries,
+    data.email,
     data.idempotency_key,
     data.error_message,
   ];
