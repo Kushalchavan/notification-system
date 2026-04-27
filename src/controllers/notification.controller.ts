@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { createNotificationService } from "../service/notification.service";
 import { notificationQueue } from "../queues/notification.queue";
+import { updateJobId } from "../repository/notification.repository";
 
 export const createNotificationController = async (
   req: Request,
@@ -34,7 +35,7 @@ export const createNotificationController = async (
       });
     }
 
-    await notificationQueue.add(
+    const job = await notificationQueue.add(
       "send-notification",
       {
         notificationId: notification.id,
@@ -52,6 +53,13 @@ export const createNotificationController = async (
         removeOnFail: false,
       },
     );
+
+    if (!job.id) {
+      throw new Error("Job ID missing");
+    }
+
+    // Update the notification with the job ID
+    await updateJobId(notification.id, job.id);
 
     return res.status(201).json({
       success: true,

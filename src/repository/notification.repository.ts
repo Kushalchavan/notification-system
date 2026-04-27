@@ -65,6 +65,18 @@ export const updateNotificationStatus = async (
   const values = [status, errorMessage, id];
 
   const result = await pool.query<Notification>(query, values);
-  
+
   return result.rows[0] ?? null;
+};
+
+// update job_id for a notification
+export const updateJobId = async (notificationId: string, jobId: string) => {
+  const query = `
+    UPDATE notifications
+    SET job_id = $1,
+        updated_at = NOW()
+    WHERE id = $2
+  `;
+
+  await pool.query(query, [jobId, notificationId]);
 };
