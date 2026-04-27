@@ -9,7 +9,7 @@ export const createNotification = async (
   data: CreateNotificationDBInput,
 ): Promise<Notification | null> => {
   const query = `
-  INSERT INTO notifications (user_id, type, message, status, retry_count, max_retries,email, idempotency_key, error_message)
+  INSERT INTO notifications (user_id, type, message, status, retry_count, max_retries, email, idempotency_key, error_message)
   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
   ON CONFLICT (idempotency_key) DO NOTHING
   RETURNING *;
@@ -45,4 +45,26 @@ export const findByIdempotencyKey = async (
   const result = await pool.query<Notification>(query, [idempotencyKey]);
 
   return result.rows[0] || null;
+};
+
+// update notification status
+export const updateNotificationStatus = async (
+  id: string,
+  status: "SENT" | "FAILED",
+  errorMessage: string | null = null,
+) => {
+  const query = `
+    UPDATE notifications
+    SET status = $1,
+        error_message = $2,
+        updated_at = NOW()
+    WHERE id = $3
+    RETURNING *;
+  `;
+
+  const values = [status, errorMessage, id];
+
+  const result = await pool.query<Notification>(query, values);
+  
+  return result.rows[0] ?? null;
 };

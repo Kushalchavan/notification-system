@@ -27,19 +27,37 @@ export const createNotificationController = async (
       idempotency_key: idempotencyKey,
     });
 
-    await notificationQueue.add("send-notification", {
-      type,
-      message,
-      email,
-    });
-
-    return res
-      .status(201)
-      .json({
-        success: true,
-        message: "notification queued",
-        data: notification,
+    if (!notification) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to create notification",
       });
+    }
+
+    await notificationQueue.add(
+      "send-notification",
+      {
+        notificationId: notification.id,
+        type,
+        message,
+        email,
+      },
+      {
+        attempts: 3,
+        backoff: {
+          type: "exponential",
+          delay: 2000, // 2 seconds
+        },
+        removeOnComplete: true,
+        removeOnFail: false,
+      },
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "notification queued",
+      data: notification,
+    });
   } catch (error) {
     next(error);
   }
