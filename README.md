@@ -43,7 +43,7 @@ Client → API → Database (PostgreSQL)
 
 ---
 
-```md
+
 ## 📂 Project Structure
 
 ```bash
@@ -59,7 +59,7 @@ src/
 ├── middlewares/   # Error handling
 ---
 ```
-``
+
 
 ## ⚙️ Setup Instructions
 
