@@ -6,6 +6,7 @@ import logger from "../config/logger.config";
 import { sendEmail } from "../providers/email.provider";
 import { sendSMS } from "../providers/sms.provider";
 import { sendPush } from "../providers/push.provider";
+import { failedNotificationQueue } from "../queues/failed-notification.queue";
 
 const worker = new Worker(
   "notification-queue",
@@ -24,27 +25,49 @@ const worker = new Worker(
         case "EMAIL":
           // simulate email sending
           await sendEmail(email, "Notification", message);
+          logger.info("Email sent successfully", {
+            jobId: job.id,
+            notificationId,
+            email,
+          });
           break;
 
         case "SMS":
           // simulate phone number retrieval from email (for demo purposes)
           await sendSMS(phone, message);
+          logger.info("SMS sent successfully", {
+            jobId: job.id,
+            notificationId,
+            phone,
+          });
           break;
 
         case "PUSH":
           // simulate device ID retrieval from email (for demo purposes)
           await sendPush(deviceId, message);
+          logger.info("Push notification sent successfully", {
+            jobId: job.id,
+            notificationId,
+            deviceId,
+          });
           break;
 
         default:
           throw new Error("Unsupported notification type");
       }
 
-      logger.info("Email sent", {
-        jobId: job.id,
-        notificationId,
-        email,
-      });
+      // Only add to failed queue if this was the last attempt
+      if (job.attemptsMade + 1 >= job.opts.attempts!) {
+        await failedNotificationQueue.add("failed-notification", {
+          originalJobId: job.id,
+          notificationId,
+          type,
+          message,
+          email,
+          failedReason:
+            Error instanceof Error ? Error.message : "Unknown error",
+        });
+      }
 
       // success
       await updateNotificationStatus(notificationId, "SENT");
