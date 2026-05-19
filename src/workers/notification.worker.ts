@@ -3,6 +3,7 @@ import { redisConfig } from "../config/redis.config";
 import { updateNotificationStatus } from "../repository/notification.repository";
 import { pool } from "../config/db.config";
 import logger from "../config/logger.config";
+import { sendEmail } from "../providers/email.provider";
 
 const worker = new Worker(
   "notification-queue",
@@ -18,7 +19,7 @@ const worker = new Worker(
       });
 
       // simulate email sending
-      await new Promise((res) => setTimeout(res, 2000));
+      await sendEmail(email,"Notification", message);
 
       logger.info("Email sent", {
         jobId: job.id,
